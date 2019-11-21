@@ -7,76 +7,66 @@ use App\User;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    //prikaži sve usere
     public function index()
     {
         $users = User::all();
 
         return view('users.index', compact('users'));
     }
-
+    // prikaži formu za stavaranje novog usera
     public function create()
     {
-        //
+        return view('users.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    // spremi novo kreiranog usera u bazu
     public function store(Request $request)
     {
-        //
+
+        $request->validate([
+            'name' => 'required|string|max:191|min:2',
+            'email' => 'required|email|max:191|unique:users',
+            'password' => 'required|min:3|confirmed'
+        ]);
+
+        $user = new User();
+        $user->name = $request['name'];
+        $user->email = $request['email'];
+        $user->password = bcrypt($request['password']);
+        $user->save();
+
+        return redirect()->route('users.index')->withFlashMessage("Korisnik $user->name uspješno je kreiran.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // prikaži podatke o jednom useru
     public function show($id)
     {
-        //
+        $user = User::find($id);
+
+        return view('users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // prikaži formu za uređivanje usera
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+
+        return view('users.edit', compact('user'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // spremi uređenog usera u bazu
     public function update(Request $request, $id)
     {
-        //
+        // Domaća zadaća
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // obriši usera
     public function destroy($id)
     {
-        //
+        $user = User::find($id);
+        $user->delete();
+
+        return redirect()->route('users.index')->withFlashMessage("Korisnik $user->name uspješno je izbrisan.");
     }
 }

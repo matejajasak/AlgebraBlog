@@ -13,3 +13,5 @@ php artisan route:list
 
 php artisan make:controller UserController -r
 
+php artisan config:cache
+
