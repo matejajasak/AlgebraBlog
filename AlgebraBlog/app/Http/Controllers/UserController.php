@@ -7,14 +7,15 @@ use App\User;
 
 class UserController extends Controller
 {
-    //prikaži sve usere
+    // prikaži sve usere
     public function index()
     {
         $users = User::all();
 
         return view('users.index', compact('users'));
     }
-    // prikaži formu za stavaranje novog usera
+
+    // prikaži formu za stvaranje novog usera
     public function create()
     {
         return view('users.create');
@@ -23,7 +24,6 @@ class UserController extends Controller
     // spremi novo kreiranog usera u bazu
     public function store(Request $request)
     {
-
         $request->validate([
             'name' => 'required|string|max:191|min:2',
             'email' => 'required|email|max:191|unique:users',
@@ -58,7 +58,26 @@ class UserController extends Controller
     // spremi uređenog usera u bazu
     public function update(Request $request, $id)
     {
-        // Domaća zadaća
+        $request->validate([
+            'name' => 'required|string|max:191|min:2',
+            'email' => 'required|email|max:191|unique:users,email,'.$id
+        ]);
+        $user = User::find($id);
+        $user->name = $request['name'];
+        $user->email = $request['email'];
+
+        if ($request['password']) {
+            
+            $request->validate([
+                'password' => 'min:3'
+            ]);
+
+            $user->password = bcrypt($request['password']);
+        }
+        
+        $user->save();
+
+        return redirect()->route('users.index')->withFlashMessage("Korisnik $user->name uspješno ažiriran.");
     }
 
     // obriši usera
@@ -67,6 +86,6 @@ class UserController extends Controller
         $user = User::find($id);
         $user->delete();
 
-        return redirect()->route('users.index')->withFlashMessage("Korisnik $user->name uspješno je izbrisan.");
+        return redirect()->route('users.index')->withFlashMessage("Korisnik $user->name uspješno je obrisan.");
     }
 }
